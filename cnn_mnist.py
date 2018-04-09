@@ -21,21 +21,20 @@ Y_VAL = Y[8000:10000]
 inputs = tf.placeholder(shape=(None, 28, 28), name="inputs", dtype=tf.float32)
 labels = tf.placeholder(shape=(None, ), name="labels", dtype=tf.int64)
 
-# Define layer 1
-reshaped = tf.reshape(inputs, shape=(-1, 28*28))
-W0 = tf.get_variable(name="weights0", shape=(784, 1024))
-B0 = tf.get_variable(name="bias0", shape=(1024))
-layer1 = tf.nn.elu(tf.matmul(reshaped, W0) + B0)
-
-# Define layer 2
-W1 = tf.get_variable(name="weights1", shape=(1024, 700))
-B1 = tf.get_variable(name="bias1", shape=(700))
-layer2 = tf.matmul(layer1, W1) + B1
+# Define conv layer
+filter = tf.get_variable(name="filters", shape=[2,2,1,64])
+conv1 = tf.layers.conv2d(
+      inputs=tf.reshape(inputs, shape=(-1, 28, 28, 1)),
+      filters=32,
+      kernel_size=[2, 2],
+      padding="same",
+      activation=tf.nn.relu)
+pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
 
 # Define output layer
-W2 = tf.get_variable(name="weights2", shape=(700, 10))
-B2 = tf.get_variable(name="bias2", shape=(10))
-logits = tf.matmul(layer2, W2) + B2
+W = tf.get_variable(name="weights", shape=(6272, 10))
+B = tf.get_variable(name="bias2", shape=(10))
+logits = tf.matmul(tf.reshape(pool1, shape=(-1, 6272)), W) + B
 predictions = tf.argmax(tf.nn.softmax(logits), axis=1)
 
 #Create loss node
